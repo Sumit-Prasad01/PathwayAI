@@ -14,7 +14,7 @@ def main():
 
         workflow = CoursePlannerWorkflow()
 
-        # Get query from CLI or input
+        # Get query
         if len(sys.argv) > 1:
             query = " ".join(sys.argv[1:])
         else:
@@ -24,11 +24,20 @@ def main():
 
         logger.info("\n" + "=" * 50)
         logger.info("FINAL OUTPUT:\n")
-        logger.info(result["final_output"]["answer"])
+
+        final = result.get("final_output")
+
+        if isinstance(final, dict):
+            logger.info(final.get("answer", "No answer"))
+        elif isinstance(final, str):
+            logger.info(final)
+        else:
+            logger.info("No output generated")
+
         logger.info("\n" + "=" * 50)
 
         if result.get("error"):
-            print("\nERROR:", result["error"])
+            logger.error(f"ERROR: {result['error']}")
 
     except Exception as e:
         logger.error(f"Run failed: {e}")

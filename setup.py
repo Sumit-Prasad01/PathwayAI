@@ -5,7 +5,7 @@ with open('requirements.txt', 'r') as f:
 
 
 setup(
-    name = "PathwayAI",
+    name = "CoursePilot AI",
     version = '0.1',
     author = 'Sumit Prasad',
     packages = find_packages(),

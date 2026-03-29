@@ -1,58 +1,55 @@
-from groq import Groq
+from langchain_groq import ChatGroq
 import os
-import re
 import json
+import re
+
 from src.course_planner_agent.state.state import GraphState
 from src.course_planner_agent.utils.logger import logger
 from src.course_planner_agent.utils.prompt_loader import load_prompt
 from src.course_planner_agent.schemas.response_schema import ResponseSchema
 
+from dotenv import load_dotenv
+load_dotenv()
 
 VERIFIER_PROMPT_PATH = "src/course_planner_agent/prompts/verifier_prompt.txt"
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+llm = ChatGroq(
+    model="llama-3.3-70b-versatile",
+    api_key=os.getenv("GROQ_API_KEY"),
+    temperature=0.2
+)
 
 
 def verifier_node(state: GraphState) -> GraphState:
-    """
-    LLM-based verification with structured output
-    """
     try:
         logger.info("Running Verifier Node")
 
         answer = state.get("answer", {})
-        answer_text = json.dumps(answer, indent=2)
 
         if not answer:
             state["error"] = "No answer generated"
             return state
 
-        # Load verifier prompt
         verifier_prompt = load_prompt(VERIFIER_PROMPT_PATH)
 
-        # Create verification input
+        answer_text = json.dumps(answer, indent=2)
+
         verification_input = f"""
 Response to verify:
 
 {answer_text}
 """
 
-        # LLM verification
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "system", "content": verifier_prompt},
-                {"role": "user", "content": verification_input}
-            ],
-            temperature=0
-        )
+        response = llm.invoke([
+            ("system", verifier_prompt),
+            ("human", verification_input)
+        ])
 
-        final_text = response.choices[0].message.content
+        final_text = response.content
+        final_text = re.split(r"The response is valid", final_text)[0].strip()
 
-        # Extract citations
         citations = list(set(re.findall(r"\[Chunk\s*\d+\]", final_text)))
 
-        # Wrap into structured schema
         response_obj = ResponseSchema(
             answer=final_text,
             citations=citations,
@@ -61,7 +58,6 @@ Response to verify:
             error=None
         )
 
-        # Store structured output
         state["citations"] = citations
         state["final_output"] = response_obj.dict()
 
@@ -72,15 +68,14 @@ Response to verify:
     except Exception as e:
         logger.error(f"Verifier Node failed: {e}")
 
-        error_response = ResponseSchema(
+        state["final_output"] = ResponseSchema(
             answer=None,
             citations=[],
             clarifying_questions=[],
             assumptions=None,
             error=str(e)
-        )
+        ).dict()
 
-        state["final_output"] = error_response.dict()
         state["error"] = str(e)
 
         return state

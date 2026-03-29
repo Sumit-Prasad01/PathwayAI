@@ -1,16 +1,23 @@
-import json
-from groq import Groq
+from langchain_groq import ChatGroq
 import os
+import json
 
 from src.course_planner_agent.state.state import GraphState
 from src.course_planner_agent.utils.logger import logger
 from src.course_planner_agent.utils.prompt_loader import load_prompt
 
+from dotenv import load_dotenv
+load_dotenv()
 
 SYSTEM_PROMPT_PATH = "src/course_planner_agent/prompts/system_prompt.txt"
 PLANNER_PROMPT_PATH = "src/course_planner_agent/prompts/planner_prompt.txt"
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+llm = ChatGroq(
+    model="llama-3.3-70b-versatile",
+    api_key=os.getenv("GROQ_API_KEY"),
+    temperature=0.2
+)
 
 
 def format_docs(docs) -> str:
@@ -23,19 +30,37 @@ def format_docs(docs) -> str:
 
 
 def safe_json_load(text: str):
-    """
-    Safely parse JSON from LLM output
-    """
+    import json
+    import re
+
+    # Clean common issues
+    text = text.strip()
+
+    # Remove markdown if present
+    text = text.replace("```json", "").replace("```", "")
+
+    # Try direct parse
     try:
         return json.loads(text)
     except:
-        # try to extract JSON substring
-        import re
-        match = re.search(r"\{.*\}", text, re.DOTALL)
-        if match:
-            return json.loads(match.group())
-        raise ValueError("Invalid JSON output from model")
+        pass
 
+    # Extract JSON block
+    match = re.search(r"\{[\s\S]*\}", text)
+    if match:
+        try:
+            return json.loads(match.group())
+        except:
+            pass
+
+    # FINAL FALLBACK (VERY IMPORTANT)
+    return {
+        "answer": text,
+        "why": "Parsing failed",
+        "citations": [],
+        "clarifying_questions": [],
+        "assumptions": "Model did not return valid JSON"
+    }
 
 def planner_node(state: GraphState) -> GraphState:
     try:
@@ -54,23 +79,20 @@ def planner_node(state: GraphState) -> GraphState:
             query=query
         )
 
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0
-        )
+        response = llm.invoke([
+            ("system", system_prompt),
+            ("human", prompt)
+        ])
 
-        raw_output = response.choices[0].message.content
+        raw_output = response.content
+
+        logger.info(f"RAW LLM OUTPUT:\n{raw_output}")
 
         parsed = safe_json_load(raw_output)
 
-        # store structured output directly
         state["answer"] = parsed
 
-        logger.info("Planner Node completed (JSON mode)")
+        logger.info("Planner Node completed (LangChain Groq)")
 
         return state
 

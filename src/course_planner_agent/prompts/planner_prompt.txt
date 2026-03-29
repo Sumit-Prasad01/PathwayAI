@@ -22,13 +22,14 @@ QUESTION:
 {query}
 
 IMPORTANT:
-Return ONLY valid JSON. No extra text.
+Return ONLY valid JSON.
+Do NOT include any explanation, markdown, or text outside JSON.
 
-FORMAT:
-{
-  "answer": "final answer or plan",
-  "why": "reasoning based on requirements/prereqs",
-  "citations": ["[Chunk X]", "[Chunk Y]"],
-  "clarifying_questions": ["question1", "question2"],
-  "assumptions": "anything not in catalog"
-}
+STRICT FORMAT:
+{{  
+  "answer": "string",  
+  "why": "string",  
+  "citations": ["[Chunk X]"],  
+  "clarifying_questions": [],  
+  "assumptions": "string"  
+}}

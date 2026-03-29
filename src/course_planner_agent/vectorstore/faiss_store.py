@@ -1,33 +1,21 @@
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
 from typing import List
 from langchain_core.documents import Document
-from langchain_community.vectorstores import FAISS
-from sentence_transformers import SentenceTransformer
 from src.course_planner_agent.utils.logger import logger
 
 
-class EmbeddingModel:
-    def __init__(self, model_name: str = "sentence-transformers/all-MiniLM-L6-v2"):
-        self.model = SentenceTransformer(model_name)
-
-    def embed_documents(self, texts: List[str]):
-        return self.model.encode(texts, show_progress_bar=True)
-
-    def embed_query(self, text: str):
-        return self.model.encode([text])[0]
-
-
 def build_faiss_index(documents: List[Document], save_path: str):
-    """
-    Create and save FAISS index
-    """
     try:
         logger.info("Building FAISS index...")
 
-        embedding_model = EmbeddingModel()
+        embeddings = HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2"
+        )
 
         vectorstore = FAISS.from_documents(
             documents=documents,
-            embedding=embedding_model
+            embedding=embeddings
         )
 
         vectorstore.save_local(save_path)
@@ -40,17 +28,16 @@ def build_faiss_index(documents: List[Document], save_path: str):
 
 
 def load_faiss_index(load_path: str) -> FAISS:
-    """
-    Load FAISS index
-    """
     try:
         logger.info(f"Loading FAISS index from {load_path}")
 
-        embedding_model = EmbeddingModel()
+        embeddings = HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2"
+        )
 
         vectorstore = FAISS.load_local(
             load_path,
-            embeddings=embedding_model,
+            embeddings=embeddings,
             allow_dangerous_deserialization=True
         )
 
