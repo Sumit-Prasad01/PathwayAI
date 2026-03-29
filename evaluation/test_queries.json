@@ -1,0 +1,130 @@
+[
+  {
+    "id": 1,
+    "type": "prerequisite_check",
+    "query": "Can I take CS102 if I have completed CS101?"
+  },
+  {
+    "id": 2,
+    "type": "prerequisite_check",
+    "query": "Can I take CS201 after completing CS102?"
+  },
+  {
+    "id": 3,
+    "type": "prerequisite_check",
+    "query": "Can I enroll in CS301 if I have only completed CS101?"
+  },
+  {
+    "id": 4,
+    "type": "prerequisite_check",
+    "query": "Am I eligible for CS401 after completing CS301?"
+  },
+  {
+    "id": 5,
+    "type": "prerequisite_check",
+    "query": "Can I take CS220 if I have completed CS102 but not CS201?"
+  },
+  {
+    "id": 6,
+    "type": "prerequisite_check",
+    "query": "Can I enroll in CS210 with CS102 and MATH101?"
+  },
+  {
+    "id": 7,
+    "type": "prerequisite_check",
+    "query": "Can I take CS330 without STAT201?"
+  },
+  {
+    "id": 8,
+    "type": "prerequisite_check",
+    "query": "Am I eligible for CS340 if I have CS201 and MATH201?"
+  },
+  {
+    "id": 9,
+    "type": "prerequisite_check",
+    "query": "Can I take CS350 after completing CS201 only?"
+  },
+  {
+    "id": 10,
+    "type": "prerequisite_check",
+    "query": "Can I enroll in CS102 without completing CS101?"
+  },
+
+  {
+    "id": 11,
+    "type": "multi_hop",
+    "query": "What do I need before taking CS401?"
+  },
+  {
+    "id": 12,
+    "type": "multi_hop",
+    "query": "List all prerequisites required to reach CS301 starting from scratch."
+  },
+  {
+    "id": 13,
+    "type": "multi_hop",
+    "query": "What courses must I complete before taking Machine Learning?"
+  },
+  {
+    "id": 14,
+    "type": "multi_hop",
+    "query": "What is the full prerequisite chain for Computer Vision?"
+  },
+  {
+    "id": 15,
+    "type": "multi_hop",
+    "query": "What path should I follow to reach Advanced AI?"
+  },
+
+  {
+    "id": 16,
+    "type": "program_rules",
+    "query": "What is the maximum number of credits allowed per term?"
+  },
+  {
+    "id": 17,
+    "type": "program_rules",
+    "query": "How many total credits are required to graduate?"
+  },
+  {
+    "id": 18,
+    "type": "program_rules",
+    "query": "How many electives do I need to complete?"
+  },
+  {
+    "id": 19,
+    "type": "program_rules",
+    "query": "Can CS210 or CS220 satisfy the systems requirement?"
+  },
+  {
+    "id": 20,
+    "type": "program_rules",
+    "query": "What is the minimum grade required for prerequisites?"
+  },
+
+  {
+    "id": 21,
+    "type": "not_in_docs",
+    "query": "Is CS301 offered in the Fall semester?"
+  },
+  {
+    "id": 22,
+    "type": "not_in_docs",
+    "query": "Who teaches CS401?"
+  },
+  {
+    "id": 23,
+    "type": "not_in_docs",
+    "query": "What is the class timing for CS210?"
+  },
+  {
+    "id": 24,
+    "type": "not_in_docs",
+    "query": "Is CS330 available online?"
+  },
+  {
+    "id": 25,
+    "type": "not_in_docs",
+    "query": "Which professor is best for Machine Learning?"
+  }
+]

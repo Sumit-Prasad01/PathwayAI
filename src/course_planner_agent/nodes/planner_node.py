@@ -1,10 +1,13 @@
-from typing import List
 from groq import Groq
 import os
 
 from src.course_planner_agent.state.state import GraphState
 from src.course_planner_agent.utils.logger import logger
+from src.course_planner_agent.utils.prompt_loader import load_prompt
 
+
+SYSTEM_PROMPT_PATH = "src/course_planner_agent/prompts/system_prompt.txt"
+PLANNER_PROMPT_PATH = "src/course_planner_agent/prompts/planner_prompt.txt"
 
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
@@ -35,33 +38,23 @@ def planner_node(state: GraphState) -> GraphState:
 
         context = format_docs(docs)
 
-        prompt = f"""
-You are a Course Planning Assistant.
+        # Load prompts
+        system_prompt = load_prompt(SYSTEM_PROMPT_PATH)
+        planner_template = load_prompt(PLANNER_PROMPT_PATH)
 
-RULES:
-- Use ONLY the provided context
-- DO NOT guess
-- If not found, say: "I don’t have that information in the provided catalog."
-- EVERY claim must include citation (Chunk ID)
+        #  Inject variables
+        prompt = planner_template.format(
+            context=context,
+            query=query
+        )
 
-CONTEXT:
-{context}
-
-QUESTION:
-{query}
-
-OUTPUT FORMAT:
-
-Answer / Plan:
-Why:
-Citations:
-Clarifying Questions (if needed):
-Assumptions / Not in catalog:
-"""
-
+        # Proper LLM call with system + user roles
         response = client.chat.completions.create(
-            model="llama3-70b-8192",
-            messages=[{"role": "user", "content": prompt}],
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt}
+            ],
             temperature=0
         )
 
